@@ -16,6 +16,10 @@ var upload = multer({storage: storage});
     res.render('index.ejs');
   });//get request that renders our home page
 
+  // app.get('/room/:room', (req,res) => {
+  //   res.render('room', { roomId: req.params.room })
+  // })//get request for the chatroom
+
   // PROFILE SECTIONS =========================
   // app.get('/feed', isLoggedIn, function(req, res) {//get request that takes in location, 2 functions as arguments
   //   db.collection('posts').find().toArray((err, result) => {//go to collection, find specific one, place in array
@@ -123,9 +127,9 @@ var upload = multer({storage: storage});
 
 // Chat Requests ===============================================================
   app.post('/chatRequest', (req, res) => { //posting the message request to the DB
-    console.log("coachID", req.body.coachID);
+    console.log("coach info", req.body);
     console.log("currentAthlete", req.user._id);
-    db.collection('chatRequest').save({coachID: ObjectId(req.body.coachID), athleteID: req.user._id, athleteUN: req.user.local.username, status: "pending"}, (err, result) => {// goes into collections and adds the data to these properties
+    db.collection('chatRequest').save({coachID: ObjectId(req.body.coachID), athleteID: req.user._id, athleteUN: req.user.local.username, roomID:req.body.coachID + req.user._id, status: "pending"}, (err, result) => {// goes into collections and adds the data to these properties
       if (err) return console.log(err)//returns err if response is no good
       console.log('saved to database')
       res.redirect('/athleteprofile')// refresh profile page to render the updated information
@@ -133,10 +137,10 @@ var upload = multer({storage: storage});
   })
 
   app.put('/accepted', (req, res) => {// request to update inforamtion on the page
-      db.collection('chatRequest')// go into db collection
+      db.collection('chatRequest')
       .findOneAndUpdate({_id: ObjectId(req.body.requestId)}, {//find the properties and updating
         $set: {//changing whaterver property
-          status: "Approved"//from the request data go to thumbup value and adding 1
+          status: "Approved"
         }
       }, {
         sort: {_id: -1},//ordering the response in descending order
@@ -160,6 +164,26 @@ var upload = multer({storage: storage});
         res.send(result)
       })
     })
+
+    app.get('/room/:room', (req,res) => {
+
+      db.collection('chatRequest').find({"status" : "Approved" }).toArray((err, result) => {//go to collection, find specific one, place in array
+
+        if (err) return console.log(err)// if the response is an err
+        console.log(result);
+
+        res.render('room.ejs', {
+
+          roomId: result[0].roomID })
+
+        // if(req.user.local.profiletype == "coach"){
+        //   res.redirect("/coachprofile")
+        // }else{
+        //   res.redirect("/athleteprofile")
+        // }
+      })
+    })
+
   // app.put('/messages', (req, res) => {// request to update inforamtion on the page
   //   db.collection('messages')// go into db collection
   //   .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {//find the properties and updating

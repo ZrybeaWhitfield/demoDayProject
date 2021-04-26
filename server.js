@@ -58,9 +58,9 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(flash());
 
-app.get('/room/:room', (req,res) => {
-  res.render('room', { roomId: req.params.room })
-})
+// app.get('/room/:room', (req,res) => {
+//   res.render('room', { roomId: req.params.room })
+// })
 
 io.on('connection', socket => {
   socket.on('join-room', (roomId, userId) =>{
